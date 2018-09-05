@@ -1,0 +1,25 @@
+{
+    "dev": {
+        "apigateway_enabled": false,
+        //"assume_policy": "serverless-crawler-policy.json",    // cloud9 환경이 아닌 경우 주석을 해제하여 serverless-crawler-policy 사용
+        "aws_region": "ap-northeast-2",
+
+        "events": [
+            {
+                "function": "crawler.lambda_handler",
+                "expression": "rate(10 minutes)"
+            }
+        ],
+        "keep_warm": false,
+
+        "lambda_description": "Python Serverless Crawler",
+        "lambda_handler": "crawler.lambda_handler",
+        "memory_size": 128,
+        "manage_roles": false,
+        "profile_name": "default",
+        "project_name": "python-serverless-crawler",
+        "role_name": "PythonServerlessCrawlerRole", // 원래 zappa에 의해 자동 생성 되지만, 수동 추가
+        "runtime": "python3.6",
+        "s3_bucket": "your-username-serverless-demo" // your-username 부분 변경,
+    }
+}
