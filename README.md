@@ -264,13 +264,13 @@ You may lack the necessary AWS permissions to automatically manage a Zappa execu
 To fix this, see here: https://github.com/Miserlou/Zappa#using-custom-aws-iam-roles-and-policies
 ```
 
+위와 같이 권한이 없어 에러가 발생합니다.
+
 
 ### IAM Policy(정책) 설정
 [IAM 정책 생성 Console](https://console.aws.amazon.com/iam/home?#/policies$new?step=edit) 에 접속합니다.
 
 ![iam-create-policy-1](/images/iam-create-policy-1.png)
-
-JSON 탭을 선택하고 아래 json 을 입력 후 review 버튼을 누릅니다.
 
 ```json
 {
@@ -311,6 +311,7 @@ JSON 탭을 선택하고 아래 json 을 입력 후 review 버튼을 누릅니�
 
 ```
 
+JSON 탭을 선택하고 위 json 을 입력 후 review 버튼을 누릅니다.
 
 ![iam-create-policy-2](/images/iam-create-policy-2.png)
 
