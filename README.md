@@ -496,18 +496,17 @@ class PortalKeyword(Model):
     keywords = ListAttribute()
 
 
-def lambda_handler(event, context):
+def naver_keywords_crawler():
     created_at = datetime.datetime.utcnow().isoformat()[:19]
-
     naver_keywords = []
 
-    naver_resp = requests.get('https://www.naver.com/')
-    naver_soup = BeautifulSoup(naver_resp.text, 'html.parser')
-
     try:
-        for ah_item in naver_soup.select('.ah_item')[:20]:
-            rank = int(ah_item.select('.ah_r')[0].get_text())
-            keyword = ah_item.select('.ah_k')[0].get_text()
+        naver_resp = requests.get('https://www.naver.com/')
+        naver_soup = BeautifulSoup(naver_resp.text, 'html.parser')
+
+        for i, tag in enumerate(naver_soup.find_all('span', {'class':'ah_k'})[:20]):
+            rank = i+1
+            keyword = tag.get_text()
 
             naver_keywords.append({'rank': rank, 'keyword': keyword})
 
@@ -517,9 +516,39 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(e)
+        return None
+
+    return naver_keywords
+
+
+def daum_keywords_crawler():
+    created_at = datetime.datetime.utcnow().isoformat()[:19]
+    daum_keywords = []
+
+    try:
+        # daum 의 실시간 검색어 크롤러를 작성해 보세요.
+        return True
+
+    except Exception as e:
+        print(e)
+        return None
+
+    return daum_keywords
+
+
+def lambda_handler(event, context):
+
+    naver_result = naver_keywords_crawler()
+    daum_result = daum_keywords_crawler()
+
+    # print(naver_result)
+    # print(daum_result)
+
+    if naver_result and daum_result:
+        return 'success'
+    else:
         return 'error'
 
-    return 'success'
 ```
 
 
