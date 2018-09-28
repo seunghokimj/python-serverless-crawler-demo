@@ -571,8 +571,9 @@ Memory Size: 128 MB
 Max Memory Used: 47 MB
 ```
 
+### Zappa update
 
-update 를 해봅니다.
+주기적으로 크롤링 하도록 함수를 update 를 해봅니다.
 
 `zappa_settings.json` 에서 event 주석 된 부분을 주석 해제합니다.
 
