@@ -253,7 +253,7 @@ zappa_settings.json 파일을 확인하면 기본적인 zappa 설정 내용을 �
 
 Zappa는 deploy 할 때 zappa 가 AWS IAM policy와 role을 자동으로 생성하는데, 오늘 실습하는 Cloud9 환경에서는 `Zappa create role` 권한 제한이 있어, manual 하게 생성합니다.
 
-Local 환경에서 개발하시면 이 부분은 자동 생성되기 때문에 넘어가셔도 좋습니다. (이 때 zappa settings은 이 파일을 참조합니다.)
+Local 환경에서 개발하시면 이 부분은 자동 생성되기 때문에 넘어가셔도 좋습니다. (이 때 zappa settings은 [이 파일](https://github.com/seunghokimj/python-serverless-demo/blob/master/zappa_settings.local.json)을 참조합니다.)
 
 ```
 (venv) $ zappa deploy dev
