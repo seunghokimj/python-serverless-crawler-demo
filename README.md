@@ -105,24 +105,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 python version 설정을 완료하였습니다.
 
-### ipython 을 이용한 console 개발 환경 설정
-virtualenv 로 개발 환경을 설정한 이후 개발의 편의를 위해 `ipython` 을 설치합니다.
-
-```sh
-(venv) $ pip install ipython
-Collecting ipython
-...
-Installing collected packages: ipython
-Successfully installed ipython-7.0.1
-(venv) $ ipython
-Python 3.6.5 (default, Apr 26 2018, 00:14:31)
-Type 'copyright', 'credits' or 'license' for more information
-IPython 7.0.1 -- An enhanced Interactive Python. Type '?' for help.
-
-In [1]:
-```
-
-
 
 ## [Zappa - Serverless Python Web Services](https://www.zappa.io/)
 
