@@ -74,6 +74,9 @@ Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍
 
 ![c9-region](/images/c9-region.png)
 
+## Python 설정
+
+### virtualenv 설정
 Cloud9 설정을 마친 다음 python version 관리를 합니다.
 
 Python version 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 툴을 사용합니다.
@@ -81,7 +84,6 @@ Python version 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 툴을
 Cloud9 에서는 python2.7 을 기본으로 alias 하고 있기 때문에 python3을 사용하기 위해 unalias 합니다.
 
 **또한 AWS amazon linux 에서 PYTHON_INSTALL_LAYOUT 이라는 것을 설정하였는데 이부분을 해제해 줍니다.**
-
 
 
 ```sh
@@ -101,7 +103,25 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
-Cloud9과 python version 설정을 완료하였습니다.
+python version 설정을 완료하였습니다.
+
+### ipython 을 이용한 console 개발 환경 설정
+virtualenv 로 개발 환경을 설정한 이후 개발의 편의를 위해 `ipython` 을 설치합니다.
+
+```sh
+(venv) $ pip install ipython
+Collecting ipython
+...
+Installing collected packages: ipython
+Successfully installed ipython-7.0.1
+(venv) $ ipython
+Python 3.6.5 (default, Apr 26 2018, 00:14:31)
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.0.1 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]:
+```
+
 
 
 ## [Zappa - Serverless Python Web Services](https://www.zappa.io/)
