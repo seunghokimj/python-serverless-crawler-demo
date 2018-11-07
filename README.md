@@ -67,34 +67,117 @@ Configure Setting은 다음과 같이 합니다.
 
 ![c9-env](/images/c9-env.png)
 
+- Preferences > AWS SETTINGS > Region > Asia Pacific(Seoul)
+
 현재 ap-southeast-1 region에 Cloud9 Environment를 배포했으므로 Default Region이 ap-southeast-1으로 되어 있습니다.
 Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍니다.
 
-- Preferences > AWS Settings > Region > Asia Pacific(Seoul)
+![c9-region](/images/c9-pref-region.png)
 
-![c9-region](/images/c9-region.png)
+- Preferences > AWS SETTINGS > Credentials > off
 
-## Python 설정
+이번 실습은 관리자 권한의 credentials을 생성하여 진행합니다. Cloud9이 temporary credentials 은 off 합니다.
 
-### virtualenv 설정
-Cloud9 설정을 마친 다음 python version 관리를 합니다.
+![c9-region](/images/c9-pref-credentials.png)
 
-Python version 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 툴을 사용합니다.
 
-Cloud9 에서는 python2.7 을 기본으로 alias 하고 있기 때문에 python3을 사용하기 위해 unalias 합니다.
+- Preferences > PROJECT SETTINGS > Python Support > Python Version > Python3
 
-**또한 AWS amazon linux 에서 PYTHON_INSTALL_LAYOUT 이라는 것을 설정하였는데 이부분을 해제해 줍니다.**
+현재 project python version이 python2 로 되어있는데, python3으로 변경합니다.
 
+![c9-env-python](/images/c9-pref-python.png)
+
+
+## AWS Credentials 설정
+오늘 실습하는 Cloud9 환경에은 aws의 여러 리소스를 생성하는 권한(s3, IAM Policy, Role 등 생성)이 필요합니다. Cloud9에 환경에 **관리자 사용자** 를 추가하여 실습을 진행합니다.
+
+### AWS IAM
+AWS는 을 통해 [IAM(Identity and Access Management)](https://console.aws.amazon.com/iam/home#/home) AWS resource에 권한을 설정합니다.
+
+IAM 에 관련하여 도움되는 내용입니다.
+- [IAM 모범 사례](https://docs.aws.amazon.com/ko_kr/IAM/latest/UserGuide/best-practices.html)
+- [자습서: IAM 역할을 사용한 AWS 계정 간 액세스 권한 위임](https://docs.aws.amazon.com/ko_kr/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
+- [당신이 AWS 계정을 만들고 가장 먼저 해야 할 일 들과 하지 말아야 할 일 들](http://www.awskr.org/2017/01/your-aws-first-days-todo-list/)
+
+#### 관리자 사용자 추가
+
+관리자 사용자와 access key를 생성합니다.
+
+[IAM 사용자](https://console.aws.amazon.com/iam/home#/users) 에 접속하여 사용자 추가 버튼을 선택합니다.
+
+![iam-create-user-0](/images/iam-create-user-0.png)
+
+사용자 이름을 입력하고, 액세스 유형에 프로그래밍 방식 액세스를 선택합니다.
+
+![iam-create-user-1](/images/iam-create-user-1.png)
+
+'권한 설정: 기존 정책 직접 연결' 탭을 선택 하고 **AdministratorAccess** 를 선택합니다.
+![iam-create-user-2](/images/iam-create-user-2.png)
+
+
+사용자 만들기 버튼을 누르면 관라자 사용자가 생성됩니다.
+![iam-create-user-3](/images/iam-create-user-3.png)
+
+마지막으로 access key를 csv로 다운로드 받으면 access key와 secret key를 얻을 수 있고 다운받은 파일은 다음과 같습니다.
+![iam-create-user-4](/images/iam-create-user-4.png)
+
+**crentials.csv**
+
+```
+User name,Password,Access key ID,Secret access key,Console login link
+python-serverless,,YOUR_ACCESS_KEY,YOUR_SECRET_ACCESS_KEY,https://############.signin.aws.amazon.com/console
+```
+
+#### Cloud9 에 AWS Credentials 적용
+생성한 access key를 Cloud9에 적용합니다.
+
+터미널에서 아래처럼 aws cli 를 사용합니다.
+
+``` sh
+
+$ aws configure
+AWS Access Key ID [None]: YOUR_ACCESS_KEY
+AWS Secret Access Key [None]: YOUR_SECRET_ACCESS_KEY
+Default region name [None]: ap-northeast-2
+Default output format [None]: json
+```
+
+제대로 access key를 입력했는지 확인해 봅니다.
+``` sh
+
+$ cat ~/.aws/credentials
+[default]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
+aws_session_token =
+```
+
+이제 AWS credentials 설정을 마쳤습니다.
+
+## Python 개발 환경 설정
+### .bash profile 설정
+터미널에서 python 관련 개발환경 명령어를 미리 설정 하도록, Cloud9의 .bash_profile 을 수정합니다.
+
+만약 Cloud9이 아닌 local 에서 실습을 진행하시는 분은, 이 부분은 설정하지 않으셔도 됩니다.
 
 ```sh
-$ unset PYTHON_INSTALL_LAYOUT
-$ unalias python
+$ wget https://raw.githubusercontent.com/seunghokimj/python-serverless-demo/master/cloud9_bash_profile
+$ cp cloud9_bash_profile ~/.bash_profile
+
+```
+
+현재 터미널을 종료하고 새로운 터미널에서 작업을 시작합니다.
+
+![c9-new-terminal](/images/c9-new-terminal.png)
+
+
+### virtualenv 설정
+실습을 위한 독립된 python 개발 환경을 생성합니다.
+
+Python 개발 환경 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 툴을 사용합니다.
+
+```sh
 $ virtualenv -p python3 venv
-Running virtualenv with interpreter /usr/bin/python3
-Using base prefix '/usr'
-New python executable in /home/ec2-user/environment/venv/bin/python3
-Also creating executable in /home/ec2-user/environment/venv/bin/python
-Installing setuptools, pip, wheel...done.
 $ . venv/bin/activate
 (venv) $ python
 Python 3.6.5 (default, Apr 26 2018, 00:14:31)
@@ -105,10 +188,10 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 python version 설정을 완료하였습니다.
 
+다시 새로운 터미널을 열면, **(venv)** 라고 virtualenv 가 activate 되어있음을 확인할 수 있습니다.
+
 
 ## [Zappa - Serverless Python Web Services](https://www.zappa.io/)
-
-
 
 ![Zappa main](/images/zappa-main.png)
 
@@ -178,8 +261,10 @@ subcommands:
 간단하게 zappa init 명령어를 확인해 봅니다. deploy 명령어는 추후에 사용하겠습니다.
 
 ```sh
+# first zappa project dir 생성
+(venv) ec2-user:~/environment $ mkdir first_zappa && cd first_zappa
 # init 으로 기본 설정
-(venv) $ zappa init
+(venv) ec2-user:~/environment/first_zappa $ zappa init
 
 ███████╗ █████╗ ██████╗ ██████╗  █████╗
 ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
@@ -202,30 +287,30 @@ Okay, using profile default!
 
 Your Zappa deployments will need to be uploaded to a private S3 bucket.
 If you don't have a bucket yet, we'll create one for you too.
-What do you want to call your bucket? (default 'zappa-b2z0giw4k'): USERNAME-serverless-demo
+What do you want to call your bucket? (default 'zappa-ld67k976y'):
 
 What's the modular path to your app's function?
 This will likely be something like 'your_module.app'.
-Where is your app's function?: crawler
+Where is your app's function?: first_zappa
 
 You can optionally deploy to all available regions in order to provide fast global service.
 If you are using Zappa for the first time, you probably don't want to do this!
-Would you like to deploy this application globally? (default 'n') [y/n/(p)rimary]: n
+Would you like to deploy this application globally? (default 'n') [y/n/(p)rimary]:
 
 Okay, here's your zappa_settings.json:
 
 {
     "dev": {
-        "app_function": "crawler",
+        "app_function": "first_zappa",
         "aws_region": "ap-northeast-2",
         "profile_name": "default",
-        "project_name": "serverless-craw",
+        "project_name": "first-zappa",
         "runtime": "python3.6",
-        "s3_bucket": "USERNAME-serverless-demo"
+        "s3_bucket": "zappa-ld67k976y"
     }
 }
 
-Does this look okay? (default 'y') [y/n]: y
+Does this look okay? (default 'y') [y/n]:
 
 Done! Now you can deploy your Zappa application by executing:
 
@@ -240,150 +325,12 @@ and stop by our Slack channel here: https://slack.zappa.io
 
 Enjoy!,
  ~ Team Zappa!
-
-
-zappa_settings.json
 ```
 
 
 zappa_settings.json 파일을 확인하면 기본적인 zappa 설정 내용을 확인할 수 있습니다.
 
 자세한 설정 내용은 [zappa github](https://github.com/Miserlou/Zappa) 을 통해 확인하면 알 수 있습니다.
-
-
-## IAM Policy & Role 설정
-
-Zappa는 deploy 할 때 zappa 가 AWS IAM policy와 role을 자동으로 생성하는데, 오늘 실습하는 Cloud9 환경에서는 `Zappa create role` 권한 제한이 있어, manual 하게 생성합니다.
-
-Local 환경에서 개발하시면 이 부분은 자동 생성되기 때문에 넘어가셔도 좋습니다. (이 때 zappa settings은 [이 파일](https://github.com/seunghokimj/python-serverless-demo/blob/master/zappa_settings.local.json)을 참조합니다.)
-
-```
-(venv) $ zappa deploy dev
-Calling deploy for stage dev..
-Creating serverless-craw-dev-ZappaLambdaExecutionRole IAM Role..
-Error: Failed to manage IAM roles!
-You may lack the necessary AWS permissions to automatically manage a Zappa execution role.
-To fix this, see here: https://github.com/Miserlou/Zappa#using-custom-aws-iam-roles-and-policies
-```
-
-위와 같이 권한이 없어 에러가 발생합니다.
-
-
-### IAM Policy(정책) 설정
-[IAM 정책 생성 Console](https://console.aws.amazon.com/iam/home?#/policies$new?step=edit) 에 접속합니다.
-
-![iam-create-policy-1](/images/iam-create-policy-1.png)
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "logs:*"
-            ],
-            "Resource": "arn:aws:logs:*:*:*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "lambda:InvokeFunction"
-            ],
-            "Resource": [
-                "*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:DescribeTable",
-                "dynamodb:Query",
-                "dynamodb:Scan",
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:DeleteItem"
-            ],
-            "Resource": "arn:aws:dynamodb:*:*:*"
-        }
-    ]
-}
-
-
-```
-
-JSON 탭을 선택하고 위 json 을 입력 후 review 버튼을 누릅니다.
-
-![iam-create-policy-2](/images/iam-create-policy-2.png)
-
-정책 이름을 python-serverless-crawler-policy 로 입력 후 `create policy` 버튼을 누릅니다.
-
-### IAM Role(역할) 설정
-`python-serverless-crawler-policy` 라는 정책을 가지는 역할을 생성합니다.
-
-[IAM 역할 생성 Console](https://console.aws.amazon.com/iam/home?#/roles$new?step=type) 에 접속합니다.
-
-![iam-create-role-1](/images/iam-create-role-1.png)
-
-Lambda를 선택 후, `다음` 버튼을 누릅니다.
-
-![iam-create-role-2](/images/iam-create-role-2.png)
-
-`python-serverless-crawler-policy` 정책을 선택 후 `다음:검토` 버튼을 누릅니다.
-
-![iam-create-role-3](/images/iam-create-role-3.png)
-
-역할 이름을 `PythonServerlessCrawlerRole` 로 입력 후 `역할 만들기` 버튼을 누릅니다.
-
-
-[IAM 역할 신뢰관계 수정 Console](https://console.aws.amazon.com/iam/home?#/roles/PythonServerlessCrawlerRole?section=trust) 에 접속합니다.
-
-![iam-edit-role-1](/images/iam-edit-role-1.png)
-
-신뢰관계를 편집합니다.
-
-![iam-edit-role-2](/images/iam-edit-role-2.png)
-
-아래 json 을 입력하여 `신뢰 정책 업데이트` 버튼을 누릅니다.
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": [
-          "apigateway.amazonaws.com",
-          "lambda.amazonaws.com",
-          "events.amazonaws.com"
-        ]
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-```
-
-IAM policy와 role 설정을 완료 하였습니다.
-
-
-## S3 Bucket 생성하기
-
-S3는 Object Storage로 쉽게 설명하자면 하나의 저장소입니다. 파일들을 업로드 / 다운로드 할 수 있으며 AWS에서 핵심적인 서비스 중 하나입니다.
-여러 방면으로 활용할 수 있지만 여기서는 소스코드와 관련 라이브러리의 저장소 역할을 합니다.
-
-S3의 메인으로 가서 버킷 생성하기 버튼을 클릭합니다.
-
-![s3-create-btn.png](/images/s3-create-btn.png)
-
-아래와 같이 입력하고 생성버튼을 클릭합니다.
-
-- 버킷 이름(Bucket name): USERNAME-serverless-demo   // 여기서 USERNAME을 수정합니다. ex) seungho-serverless-demo
-- 리전(Region): 아시아 태평양(서울)
-
-![s3-create-btn.png](/images/s3-create-1.png)
 
 ## DynamoDB 테이블 생성하기
 
@@ -401,8 +348,6 @@ DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko
 
 
 ## Python 크롤링 시작하기
-이제 부터는 cloud9을 사용합니다.
-
 파일 트리는 다음과 같습니다.
 
 ```txt
@@ -414,13 +359,11 @@ environment
     └── requirements.txt : 개발을 위하 필요한 library 정보
 ```
 
-먼저 터미널을 열어 serverless-crawler 디렉터리를 생성하고 zappa 초기화를 시켜줍니다.
+먼저 터미널을 열어 serverless-crawler 디렉터리를 생성하고 각 파일들을 편집합니다.
 
 ```sh
-(venv) ec2-user:~/environment $ mkdir serverless-crawler && cd serverless-crawler && zappa init
-
+(venv) ec2-user:~/environment $ mkdir serverless-crawler && cd serverless-crawler
 ```
-
 
 ### serverless-crawler/requirements.txt
 ```txt
@@ -437,6 +380,8 @@ python은 requirements.txt 에 개발에 필요한 라이브러리를 기술합�
 - pynamodb: DynamoDB를 사용하기 쉽도록 Modeling하는 도구
 - zappa: python serverless framework
 
+requirements.txt에 있는 라이브러리들을 설치 합니다.
+
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ pip install -r requirements.txt
 
@@ -444,33 +389,40 @@ python은 requirements.txt 에 개발에 필요한 라이브러리를 기술합�
 
 
 ### serverless-crawler/zappa_settings.json
+zappa 를 init 하면 zappa_settings.json 파일이 생성됩니다.
 
-`zappa_settings.json` 을 아래처럼 변경하여 저장합니다.
+```sh
+(venv) ec2-user:~/environment/serverless-crawler $ zappa init
+...
+What do you want to call this environment (default 'dev'): dev
+...
+What do you want to call your bucket? (default 'zappa-gpz692isv'): 아무것도 입력하지 않음
+...
+Where is your app's function?: crawler
+...
+Would you like to deploy this application globally? (default 'n') [y/n/(p)rimary]: n
+...
+Does this look okay? (default 'y') [y/n]: y
+...
+```
+
+
+**zappa_settings.json** 을 아래처럼 변경하여 저장합니다.
 
 ```json
 {
     "dev": {
-        "apigateway_enabled": false,
-        //"assume_policy": "serverless-crawler-policy.json",    // cloud9 환경이 아닌 경우 주석을 해제하여 serverless-crawler-policy 사용
         "aws_region": "ap-northeast-2",
-
-        //"events": [
-        //    {
-        //        "function": "crawler.lambda_handler",
-        //        "expression": "rate(10 minutes)"
-        //    }
-        //],
-        "keep_warm": false,
-
-        "lambda_description": "Python Serverless Crawler",
-        "lambda_handler": "crawler.lambda_handler",
-        "memory_size": 128,
-        "manage_roles": false,
         "profile_name": "default",
         "project_name": "python-serverless-crawler",
-        "role_name": "PythonServerlessCrawlerRole", // 원래 zappa에 의해 자동 생성 되지만, 수동 추가
         "runtime": "python3.6",
-        "s3_bucket": "your-username-serverless-demo" // your-username 부분 변경,
+        "s3_bucket": "ZAPPA_GENERATED_S3_BUCKET",
+
+        "apigateway_enabled": false,
+        "keep_warm": false,
+        "lambda_description": "Python Serverless Crawler",
+        "lambda_handler": "crawler.lambda_handler",
+        "memory_size": 128
     }
 }
 ```
@@ -558,7 +510,7 @@ def lambda_handler(event, context):
 ```python
 from crawler import lambda_handler
 
-lambda_handler(None, None)
+print(lambda_handler(None, None))
 ```
 
 터미널에서 테스트 코드를 실행시켜 봅니다.
@@ -606,7 +558,25 @@ Max Memory Used: 47 MB
 
 주기적으로 크롤링 하도록 함수를 update 를 해봅니다.
 
-`zappa_settings.json` 에서 event 주석 된 부분을 주석 해제합니다.
+`zappa_settings.json` 에서 events 를 추가합니다.
+
+**serverless-crawler/zappa_settings.json**
+```json
+{
+    "dev": {
+        ...
+        "apigateway_enabled": false,
+        "events": [
+            {
+                "function": "crawler.lambda_handler",
+                "expression": "rate(10 minutes)"
+            }
+        ],
+        ...
+    }
+}
+```
+
 
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ zappa update dev
