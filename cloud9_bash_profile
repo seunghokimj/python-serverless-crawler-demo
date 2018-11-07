@@ -1,0 +1,24 @@
+# .bash_profile
+# 이 파일을 cloud9 .bash_profile 덮어씁니다.
+# $ cp cloud9_bash_profile ~/.bash_profile
+
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+
+export PATH
+source $HOME/.nvm/nvm.sh
+
+unset PYTHON_INSTALL_LAYOUT
+unalias python
+
+# Activate virtualenv
+if [ -f ~/environment/venv/bin/activate ]; then
+        . ~/environment/venv/bin/activate
+fi
