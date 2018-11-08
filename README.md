@@ -67,26 +67,24 @@ Configure Setting은 다음과 같이 합니다.
 
 ![c9-env](/images/c9-env.png)
 
+
 - Preferences > AWS SETTINGS > Region > Asia Pacific(Seoul)
 
 현재 ap-southeast-1 region에 Cloud9 Environment를 배포했으므로 Default Region이 ap-southeast-1으로 되어 있습니다.
 Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍니다.
-
 ![c9-region](/images/c9-pref-region.png)
+
 
 - Preferences > AWS SETTINGS > Credentials > off
 
 이번 실습은 관리자 권한의 credentials을 생성하여 진행합니다. Cloud9이 temporary credentials 은 off 합니다.
-
 ![c9-region](/images/c9-pref-credentials.png)
 
 
 - Preferences > PROJECT SETTINGS > Python Support > Python Version > Python3
 
 현재 project python version이 python2 로 되어있는데, python3으로 변경합니다.
-
 ![c9-env-python](/images/c9-pref-python.png)
-
 
 ## AWS Credentials 설정
 오늘 실습하는 Cloud9 환경에은 aws의 여러 리소스를 생성하는 권한(s3, IAM Policy, Role 등 생성)이 필요합니다. Cloud9에 환경에 **관리자 사용자** 를 추가하여 실습을 진행합니다.
@@ -612,12 +610,14 @@ Deleting Lambda function..
 Done!
 ```
 
+[IAM Console](https://console.aws.amazon.com/iam/home#/users)로 들어가서 오늘 생성한 관리자 사용자(python-serverless)를 삭제합니다.
 
-[DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
+[S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2)로 들어가서 Zappa가 생성한 버킷(zappa-XXXXXXXX)을 삭제합니다.
+
+[DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
 
 [Cloud9 Console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1)로 들어가서 IDE를 삭제합니다. 리전은 싱가포르입니다.
 
-[S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2##)로 들어가서 생성된 버킷을 삭제합니다.
 
 ## References
 
