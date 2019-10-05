@@ -4,7 +4,7 @@
         "profile_name": "default",
         "project_name": "python-serverless-crawler",
         "runtime": "python3.6",
-        "s3_bucket": "ZAPPA_GENERATED_S3_BUCKET",
+        "s3_bucket": "YOUR_S3_BUCKET",
 
         "apigateway_enabled": false,
         "events": [

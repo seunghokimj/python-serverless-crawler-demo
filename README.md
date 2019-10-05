@@ -83,7 +83,7 @@ Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍
 
 - Preferences > PROJECT SETTINGS > Python Support > Python Version > Python3
 
-현재 project python version이 python2 로 되어있는데, python3으로 변경합니다.
+현재 project python version이 python2 로 되어 있다면, python3으로 변경합니다.
 ![c9-env-python](/images/c9-pref-python.png)
 
 ## AWS Credentials 설정
@@ -95,7 +95,6 @@ AWS는 을 통해 [IAM(Identity and Access Management)](https://console.aws.amaz
 IAM 에 관련하여 도움되는 내용입니다.
 - [IAM 모범 사례](https://docs.aws.amazon.com/ko_kr/IAM/latest/UserGuide/best-practices.html)
 - [자습서: IAM 역할을 사용한 AWS 계정 간 액세스 권한 위임](https://docs.aws.amazon.com/ko_kr/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
-- [당신이 AWS 계정을 만들고 가장 먼저 해야 할 일 들과 하지 말아야 할 일 들](http://www.awskr.org/2017/01/your-aws-first-days-todo-list/)
 
 #### 관리자 사용자 추가
 
@@ -152,6 +151,32 @@ aws_session_token =
 
 이제 AWS credentials 설정을 마쳤습니다.
 
+## S3 Bucket 생성하기
+Amazon Simple Storage Service는 인터넷용 스토리지 서비스입니다. 파일들을 업로드 / 다운로드 할 수 있으며 AWS에서 핵심적인 서비스 중 하나입니다. 여러 방면으로 활용할 수 있지만 여기서는 소스코드와 관련 패키지의 저장소 역할을 합니다. 
+
+[S3의 메인](https://console.aws.amazon.com/s3/home?region=ap-northeast-2) 으로 가서 버킷 생성하기 버튼을 클릭합니다.
+![s3-create-btn](/images/s3-create-btn.png)
+
+아래와 같이 입력하고 생성버튼을 클릭합니다.
+
+- 버킷 이름(Bucket name): USERNAME-serverless-demo // 여기서 USERNAME을 수정합니다. e.g.) seungho-serverless-demo
+- 리전(Region): 아시아 태평양(서울)
+![s3-create-btn](/images/s3-create-1.png)
+
+## DynamoDB 테이블 생성하기
+
+DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko/dynamodb/faqs/)를 참고하시길 바랍니다.
+
+이제 DynamoDB에 Todo table을 생성할 것입니다. 파티션 키와 정렬 키는 다음과 같이 설정합니다.
+
+- 파티션키(Partition Key): portal
+- 정렬키(Sort Key): createdAt
+
+그럼 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#)로 이동합니다.
+테이블 만들기를 클릭하여 아래와 같이 테이블을 생성합니다.
+
+![dynamodb-create](/images/dynamodb-create.png)
+
 ## Python 개발 환경 설정
 ### .bash profile 설정
 터미널에서 python 관련 개발환경 명령어를 미리 설정 하도록, Cloud9의 .bash_profile 을 수정합니다.
@@ -176,12 +201,13 @@ Python 개발 환경 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 
 
 ```sh
 $ virtualenv -p python3 venv
-$ . venv/bin/activate
-(venv) $ python
-Python 3.6.5 (default, Apr 26 2018, 00:14:31)
-[GCC 4.8.5 20150623 (Red Hat 4.8.5-11)] on linux
+ec2-user:~/environment $ . venv/bin/activate
+(venv) ec2-user:~/environment $ python
+Python 3.6.8 (default, Aug  2 2019, 17:42:44) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-28)] on linux
 Type "help", "copyright", "credits" or "license" for more information.
->>>
+>>> 
+
 ```
 
 python version 설정을 완료하였습니다.
@@ -330,20 +356,6 @@ zappa_settings.json 파일을 확인하면 기본적인 zappa 설정 내용을 �
 
 자세한 설정 내용은 [zappa github](https://github.com/Miserlou/Zappa) 을 통해 확인하면 알 수 있습니다.
 
-## DynamoDB 테이블 생성하기
-
-DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko/dynamodb/faqs/)를 참고하시길 바랍니다.
-
-이제 DynamoDB에 Todo table을 생성할 것입니다. 파티션 키와 정렬 키는 다음과 같이 설정합니다.
-
-- 파티션키(Partition Key): portal
-- 정렬키(Sort Key): createdAt
-
-그럼 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#)로 이동합니다.
-테이블 만들기를 클릭하여 아래와 같이 테이블을 생성합니다.
-
-![dynamodb-create](/images/dynamodb-create.png)
-
 
 ## Python 크롤링 시작하기
 파일 트리는 다음과 같습니다.
@@ -365,9 +377,10 @@ environment
 
 ### serverless-crawler/requirements.txt
 ```txt
-beautifulsoup4==4.6.3
+beautifulsoup4==4.8.0
 pynamodb==3.3.1
-zappa==0.46.2
+python-dateutil==2.6.1
+zappa==0.48.2
 ```
 
 python은 requirements.txt 에 개발에 필요한 라이브러리를 기술합니다.
@@ -394,9 +407,9 @@ zappa 를 init 하면 zappa_settings.json 파일이 생성됩니다.
 ...
 What do you want to call this environment (default 'dev'): dev
 ...
-What do you want to call your bucket? (default 'zappa-gpz692isv'): 아무것도 입력하지 않음
+What do you want to call your bucket? (default 'zappa-gpz692isv'): 생성한 s3 이름 입력
 ...
-Where is your app's function?: crawler
+Where is your app's function?: crawler.lambda_handler
 ...
 Would you like to deploy this application globally? (default 'n') [y/n/(p)rimary]: n
 ...
@@ -414,7 +427,7 @@ Does this look okay? (default 'y') [y/n]: y
         "profile_name": "default",
         "project_name": "python-serverless-crawler",
         "runtime": "python3.6",
-        "s3_bucket": "ZAPPA_GENERATED_S3_BUCKET",
+        "s3_bucket": "YOUR_S3_BUCKET",  // 이 부분을 생성한 s3 이름으로 변경
 
         "apigateway_enabled": false,
         "keep_warm": false,
@@ -612,7 +625,7 @@ Done!
 
 [IAM Console](https://console.aws.amazon.com/iam/home#/users)로 들어가서 오늘 생성한 관리자 사용자(python-serverless)를 삭제합니다.
 
-[S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2)로 들어가서 Zappa가 생성한 버킷(zappa-XXXXXXXX)을 삭제합니다.
+[S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2)로 들어가서 생성한 s3 버킷(USERNAME-serverless-demo)을 삭제합니다.
 
 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
 
