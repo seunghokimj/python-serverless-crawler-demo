@@ -86,6 +86,32 @@ Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍
 현재 project python version이 python2 로 되어 있다면, python3으로 변경합니다.
 ![c9-env-python](/images/c9-pref-python.png)
 
+## S3 Bucket 생성하기
+Amazon Simple Storage Service는 인터넷용 스토리지 서비스입니다. 파일들을 업로드 / 다운로드 할 수 있으며 AWS에서 핵심적인 서비스 중 하나입니다. 여러 방면으로 활용할 수 있지만 여기서는 소스코드와 관련 패키지의 저장소 역할을 합니다. 
+
+[S3의 메인](https://console.aws.amazon.com/s3/home?region=ap-northeast-2) 으로 가서 버킷 생성하기 버튼을 클릭합니다.
+![s3-create-btn](/images/s3-create-btn.png)
+
+아래와 같이 입력하고 생성버튼을 클릭합니다.
+
+- 버킷 이름(Bucket name): USERNAME-serverless-demo // 여기서 USERNAME을 수정합니다. e.g.) seungho-serverless-demo
+- 리전(Region): 아시아 태평양(서울)
+![s3-create-btn](/images/s3-create-1.png)
+
+## DynamoDB 테이블 생성하기
+
+DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko/dynamodb/faqs/)를 참고하시길 바랍니다.
+
+이제 DynamoDB에 Todo table을 생성할 것입니다. 파티션 키와 정렬 키는 다음과 같이 설정합니다.
+
+- 파티션키(Partition Key): portal
+- 정렬키(Sort Key): createdAt
+
+그럼 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#)로 이동합니다.
+테이블 만들기를 클릭하여 아래와 같이 테이블을 생성합니다.
+
+![dynamodb-create](/images/dynamodb-create.png)
+
 ## AWS Credentials 설정
 오늘 실습하는 Cloud9 환경에은 aws의 여러 리소스를 생성하는 권한(s3, IAM Policy, Role 등 생성)이 필요합니다. Cloud9에 환경에 **관리자 사용자** 를 추가하여 실습을 진행합니다.
 
@@ -147,35 +173,13 @@ $ cat ~/.aws/credentials
 aws_access_key_id = YOUR_ACCESS_KEY
 aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
 aws_session_token =
+
+$ aws s3 ls
+# print s3 bucket list
 ```
 
 이제 AWS credentials 설정을 마쳤습니다.
 
-## S3 Bucket 생성하기
-Amazon Simple Storage Service는 인터넷용 스토리지 서비스입니다. 파일들을 업로드 / 다운로드 할 수 있으며 AWS에서 핵심적인 서비스 중 하나입니다. 여러 방면으로 활용할 수 있지만 여기서는 소스코드와 관련 패키지의 저장소 역할을 합니다. 
-
-[S3의 메인](https://console.aws.amazon.com/s3/home?region=ap-northeast-2) 으로 가서 버킷 생성하기 버튼을 클릭합니다.
-![s3-create-btn](/images/s3-create-btn.png)
-
-아래와 같이 입력하고 생성버튼을 클릭합니다.
-
-- 버킷 이름(Bucket name): USERNAME-serverless-demo // 여기서 USERNAME을 수정합니다. e.g.) seungho-serverless-demo
-- 리전(Region): 아시아 태평양(서울)
-![s3-create-btn](/images/s3-create-1.png)
-
-## DynamoDB 테이블 생성하기
-
-DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko/dynamodb/faqs/)를 참고하시길 바랍니다.
-
-이제 DynamoDB에 Todo table을 생성할 것입니다. 파티션 키와 정렬 키는 다음과 같이 설정합니다.
-
-- 파티션키(Partition Key): portal
-- 정렬키(Sort Key): createdAt
-
-그럼 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#)로 이동합니다.
-테이블 만들기를 클릭하여 아래와 같이 테이블을 생성합니다.
-
-![dynamodb-create](/images/dynamodb-create.png)
 
 ## Python 개발 환경 설정
 ### .bash profile 설정
