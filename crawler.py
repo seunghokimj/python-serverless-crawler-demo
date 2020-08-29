@@ -30,9 +30,6 @@ MAX_NEWS_LEN = 20
 
 
 class PortalNews(Model):
-    """
-    A DynamoDB Keyword
-    """
     class Meta:
         table_name = "PortalNews"
         region = 'ap-northeast-2'

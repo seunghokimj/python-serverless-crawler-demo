@@ -70,7 +70,6 @@ Configure Setting은 다음과 같이 합니다.
 
 - Preferences > AWS SETTINGS > Region > Asia Pacific(Seoul)
 
-현재 ap-southeast-1 region에 Cloud9 Environment를 배포했으므로 Default Region이 ap-southeast-1으로 되어 있습니다.
 Preferences(설정 화면)에서 ap-northeast-2(Seoul Region)으로 바꾸어줍니다.
 ![c9-region](/images/c9-pref-region.png)
 
@@ -243,7 +242,7 @@ Zappa를 사용하기 위해서 명령어들을 살펴봅시다.
 ```sh
 # Zappa 설치
 (venv) $ pip install zappa
-Successfully installed PyYAML-3.12 Unidecode-1.0.22 ... zappa-0.46.2
+Successfully installed ... zappa-0.51.0 zipp-3.1.0
 
 # 명령어들을 확인해봅니다.
 (venv) $ zappa --help
@@ -445,75 +444,57 @@ Does this look okay? (default 'y') [y/n]: y
 ### serverless-crawler/crawler.py
 
 ```python
-import datetime
+
+
+
+
+
 import requests
+import datetime
 from bs4 import BeautifulSoup
 from pynamodb.models import Model
 from pynamodb.attributes import UnicodeAttribute, ListAttribute
 
 
-class PortalKeyword(Model):
+DEFAULT_TIMEOUT = 10
+DEFAULT_HEADER = {
+    'User-Agent': 'Mozilla/5.0'
+}
+
+MAX_NEWS_LEN = 20
+
+
+class PortalNews(Model):
     """
     A DynamoDB Keyword
     """
     class Meta:
-        table_name = "PortalKeyword"
+        table_name = "PortalNews"
         region = 'ap-northeast-2'
 
     portal = UnicodeAttribute(hash_key=True)
     createdAt = UnicodeAttribute(range_key=True)
-    keywords = ListAttribute()
+    section = UnicodeAttribute()
+    news = ListAttribute()
 
+def naver_news_crawler(section):
+    title_list = list()
+    ...
+    return title_list
 
-def naver_keywords_crawler():
-    created_at = datetime.datetime.utcnow().isoformat()[:19]
-    naver_keywords = []
-
-    try:
-        naver_resp = requests.get('https://www.naver.com/')
-        naver_soup = BeautifulSoup(naver_resp.text, 'html.parser')
-
-        for i, tag in enumerate(naver_soup.find_all('span', {'class':'ah_k'})[:20]):
-            rank = i+1
-            keyword = tag.get_text()
-
-            naver_keywords.append({'rank': rank, 'keyword': keyword})
-
-        keyword_item = PortalKeyword('naver', created_at)
-        keyword_item.keywords = naver_keywords
-        keyword_item.save()
-
-    except Exception as e:
-        print(e)
-        return None
-
-    return naver_keywords
-
-
-def daum_keywords_crawler():
-    created_at = datetime.datetime.utcnow().isoformat()[:19]
-    daum_keywords = []
-
-    try:
-        # daum 의 실시간 검색어 크롤러를 작성해 보세요.
-        return True
-
-    except Exception as e:
-        print(e)
-        return None
-
-    return daum_keywords
-
+def daum_news_crawler(section):
+    title_list = list()
+    ...
+    return title_list
 
 def lambda_handler(event, context):
+    naver_results = {v: naver_news_crawler(k) for k, v in NAVER_SECTIONS.items()}
+    daum_results = {v: daum_news_crawler(k) for k, v in DAUM_SECTIONS.items()}
 
-    naver_result = naver_keywords_crawler()
-    daum_result = daum_keywords_crawler()
+    # print(naver_results)
+    # print(daum_results)
 
-    # print(naver_result)
-    # print(daum_result)
-
-    if naver_result and daum_result:
+    if all(naver_results.values()) and all(daum_results.values()):
         return 'success'
     else:
         return 'error'
@@ -542,13 +523,13 @@ success
 ### Zappa deploy
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ zappa deploy dev
-Calling deploy for stage dev..
 Downloading and installing dependencies..
- - sqlite==python36: Using precompiled lambda package
 Packaging project as zip.
-Uploading python-serverless-crawler-dev-1538136485.zip (5.8MiB)..
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.13M/6.13M [00:01<00:00, 3.48MB/s]
-Deployment complete!
+Uploading python-serverless-crawler-dev-1598697456.zip (9.7MiB)..
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10.2M/10.2M [00:01<00:00, 8.82MB/s]
+Scheduling..
+Unscheduled python-serverless-crawler-dev-crawler.lambda_handler.
+Scheduled python-serverless-crawler-dev-crawler.lambda_handler with expression rate(10 minutes)!
 (venv) ec2-user:~/environment/serverless-crawler $
 ```
 
@@ -563,10 +544,11 @@ Calling invoke for stage dev..
 [START] RequestId: XXXXXXX-.... Version: $LATEST
 [END] RequestId: XXXXXXX-....
 [REPORT] RequestId: XXXXXXX-....
-Duration: 2274.70 ms
-Billed Duration: 2300 ms
+Duration: 16255.10 ms
+Billed Duration: 16300 ms
 Memory Size: 128 MB
-Max Memory Used: 47 MB
+Max Memory Used: 90 MB
+Init Duration: 593.14 ms
 ```
 
 ### Zappa update
@@ -595,15 +577,14 @@ Max Memory Used: 47 MB
 
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ zappa update dev
-Calling update for stage dev..
 Downloading and installing dependencies..
- - sqlite==python36: Using precompiled lambda package
 Packaging project as zip.
-Uploading python-serverless-crawler-dev-1538137619.zip (5.8MiB)..
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.13M/6.13M [00:01<00:00, 3.51MB/s]
+Uploading python-serverless-crawler-dev-1598697589.zip (9.7MiB)..
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10.2M/10.2M [00:01<00:00, 9.65MB/s]
 Updating Lambda function code..
 Updating Lambda function configuration..
 Scheduling..
+Unscheduled python-serverless-crawler-dev-crawler.lambda_handler.
 Scheduled python-serverless-crawler-dev-crawler.lambda_handler with expression rate(10 minutes)!
 Your updated Zappa deployment is live!
 ```
@@ -633,7 +614,7 @@ Done!
 
 [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
 
-[Cloud9 Console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1)로 들어가서 IDE를 삭제합니다. 리전은 싱가포르입니다.
+[Cloud9 Console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-northeast-2)로 들어가서 IDE를 삭제합니다. 리전은 서울입니다.
 
 
 ## References
