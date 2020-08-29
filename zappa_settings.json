@@ -10,7 +10,7 @@
         "events": [
             {
                 "function": "crawler.lambda_handler",
-                "expression": "rate(10 minutes)"
+                "expression": "rate(30 minutes)"
             }
         ],
         "keep_warm": false,

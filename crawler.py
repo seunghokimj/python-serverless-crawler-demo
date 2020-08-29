@@ -54,9 +54,7 @@ def naver_news_crawler(section):
             title_list.append({'rank': i+1, 'title': title})
 
         if title_list:
-            news_item = PortalNews('naver', created_at)
-            news_item.section = NAVER_SECTIONS[section]
-            news_item.news = title_list
+            news_item = PortalNews('naver', createdAt=created_at, section=NAVER_SECTIONS[section], news=title_list)
             news_item.save()
         else:
             raise Exception(f'Naver no title: {section}')
@@ -82,9 +80,7 @@ def daum_news_crawler(section):
             title_list.append({'rank': i+1, 'title': title})
 
         if title_list:
-            news_item = PortalNews('daum', created_at)
-            news_item.section = DAUM_SECTIONS[section]
-            news_item.news = title_list
+            news_item = PortalNews('daum', createdAt=created_at, section=DAUM_SECTIONS[section], news=title_list)
             news_item.save()
         else:
             raise Exception(f'Daum no title: {section}')
