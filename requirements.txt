@@ -1,4 +1,6 @@
-beautifulsoup4==4.8.0
-pynamodb==3.3.1
+aiohttp==3.6.2
+beautifulsoup4==4.9.1
+pynamodb==4.3.3
 python-dateutil==2.6.1
-zappa==0.48.2
+requests==2.24.0
+zappa==0.51.0

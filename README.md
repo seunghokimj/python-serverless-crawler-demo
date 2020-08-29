@@ -207,10 +207,10 @@ Python 개발 환경 관리는 [virtualenv](https://virtualenv.pypa.io/) 라는 
 $ virtualenv -p python3 venv
 ec2-user:~/environment $ . venv/bin/activate
 (venv) ec2-user:~/environment $ python
-Python 3.6.8 (default, Aug  2 2019, 17:42:44) 
+Python 3.6.11 (default, Jul 20 2020, 22:15:17) 
 [GCC 4.8.5 20150623 (Red Hat 4.8.5-28)] on linux
 Type "help", "copyright", "credits" or "license" for more information.
->>> 
+>>>  
 
 ```
 
@@ -381,10 +381,10 @@ environment
 
 ### serverless-crawler/requirements.txt
 ```txt
-beautifulsoup4==4.8.0
-pynamodb==3.3.1
+beautifulsoup4==4.9.1
+pynamodb==4.3.3
 python-dateutil==2.6.1
-zappa==0.48.2
+zappa==0.51.0
 ```
 
 python은 requirements.txt 에 개발에 필요한 라이브러리를 기술합니다.

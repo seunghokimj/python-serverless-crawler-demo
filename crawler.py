@@ -1,82 +1,112 @@
-import datetime
 import requests
+import datetime
 from bs4 import BeautifulSoup
 from pynamodb.models import Model
 from pynamodb.attributes import UnicodeAttribute, ListAttribute
 
+NAVER_SECTIONS = {
+    '100': '정치',
+    '101': '경제',
+    '102': '사회',
+    '103': '생활/문화',
+    '104': '세계',
+    '105': 'IT/과학'
+}
 
-class PortalKeyword(Model):
+DAUM_SECTIONS = {
+    'news': '뉴스',
+    'entertain': '연예',
+    'sports': '스포츠'
+}
+
+NAVER_RANKING_NEWS_URL = 'https://news.naver.com/main/ranking/popularDay.nhn?rankingType=popular_day&sectionId='
+DAUM_RANKING_NEWS_URL = 'https://news.daum.net/ranking/popular/'
+DEFAULT_TIMEOUT = 10
+DEFAULT_HEADER = {
+    'User-Agent': 'Mozilla/5.0'
+}
+
+MAX_NEWS_LEN = 20
+
+
+class PortalNews(Model):
     """
     A DynamoDB Keyword
     """
     class Meta:
-        table_name = "PortalKeyword"
+        table_name = "PortalNews"
         region = 'ap-northeast-2'
 
     portal = UnicodeAttribute(hash_key=True)
     createdAt = UnicodeAttribute(range_key=True)
-    keywords = ListAttribute()
+    section = UnicodeAttribute()
+    news = ListAttribute()
 
 
-def naver_keywords_crawler():
+def naver_news_crawler(section):
+    title_list = list()
     created_at = datetime.datetime.utcnow().isoformat()[:19]
-    naver_keywords = []
 
     try:
-        naver_resp = requests.get('https://www.naver.com/')
+        daum_url = f'{NAVER_RANKING_NEWS_URL}{section}'
+        naver_resp = requests.get(daum_url, headers=DEFAULT_HEADER)
         naver_soup = BeautifulSoup(naver_resp.text, 'html.parser')
 
-        for i, tag in enumerate(naver_soup.find_all('span', {'class':'ah_k'})[:20]):
-            rank = i+1
-            keyword = tag.get_text()
+        for i, tag in enumerate(naver_soup.find_all('div', {'class': 'ranking_headline'})[:MAX_NEWS_LEN]):
+            title = tag.get_text().strip()
+            title_list.append({'rank': i+1, 'title': title})
 
-            naver_keywords.append({'rank': rank, 'keyword': keyword})
-
-        keyword_item = PortalKeyword('naver', created_at)
-        keyword_item.keywords = naver_keywords
-        keyword_item.save()
+        if title_list:
+            news_item = PortalNews('naver', created_at)
+            news_item.section = NAVER_SECTIONS[section]
+            news_item.news = title_list
+            news_item.save()
+        else:
+            raise Exception(f'Naver no title: {section}')
 
     except Exception as e:
-        print(e)
+        print(f'ERROR: {e}')
         return None
 
-    return naver_keywords
+    return title_list
 
 
-def daum_keywords_crawler():
+def daum_news_crawler(section):
+    title_list = []
     created_at = datetime.datetime.utcnow().isoformat()[:19]
-    daum_keywords = []
 
     try:
-        daum_resp = requests.get('https://www.daum.net/')
+        daum_url = f'{DAUM_RANKING_NEWS_URL}{section}'
+        daum_resp = requests.get(daum_url)
         daum_soup = BeautifulSoup(daum_resp.text, 'html.parser')
 
-        for i, tag in enumerate(daum_soup.find_all('a', {'class': 'link_issue', 'tabindex': '-1'})):
-            rank = i+1
-            keyword = tag.get_text()
+        for i, tag in enumerate(daum_soup.find_all('li', {'data-tiara-layer': 'news_list'})[:MAX_NEWS_LEN]):
+            title = tag.find('a', 'link_txt').get_text().strip()
+            title_list.append({'rank': i+1, 'title': title})
 
-            daum_keywords.append({'rank': rank, 'keyword': keyword})
-
-        keyword_item = PortalKeyword('daum', created_at)
-        keyword_item.keywords = daum_keywords
-        keyword_item.save()
+        if title_list:
+            news_item = PortalNews('daum', created_at)
+            news_item.section = DAUM_SECTIONS[section]
+            news_item.news = title_list
+            news_item.save()
+        else:
+            raise Exception(f'Daum no title: {section}')
 
     except Exception as e:
         print(e)
         return None
 
-    return daum_keywords
+    return title_list
 
 
 def lambda_handler(event, context):
+    naver_results = {v: naver_news_crawler(k) for k, v in NAVER_SECTIONS.items()}
+    daum_results = {v: daum_news_crawler(k) for k, v in DAUM_SECTIONS.items()}
 
-    naver_result = naver_keywords_crawler()
-    daum_result = daum_keywords_crawler()
+    # print(naver_results)
+    # print(daum_results)
 
-    # print(naver_result)
-    # print(daum_result)
-
-    if naver_result and daum_result:
+    if all(naver_results.values()) and all(daum_results.values()):
         return 'success'
     else:
         return 'error'
