@@ -1,4 +1,4 @@
-# Python Serverless 기초
+# Python Serverless Crawler Demo
 
 Python과 AWS Lambda 를 사용한 crawler 만들기 입니다.
 
@@ -187,7 +187,7 @@ $ aws s3 ls
 만약 Cloud9이 아닌 local 에서 실습을 진행하시는 분은, 이 부분은 설정하지 않으셔도 됩니다.
 
 ```sh
-$ wget https://raw.githubusercontent.com/seunghokimj/python-serverless-demo/master/cloud9_bash_profile
+$ wget https://raw.githubusercontent.com/seunghokimj/python-serverless-crawler-demo/master/cloud9_bash_profile
 $ cp cloud9_bash_profile ~/.bash_profile
 
 ```
