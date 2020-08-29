@@ -1,6 +1,7 @@
 {
     "dev": {
         "aws_region": "ap-northeast-2",
+        "exclude": ["__pycache__", "images"],
         "profile_name": "default",
         "project_name": "python-serverless-crawler",
         "runtime": "python3.6",
@@ -10,7 +11,7 @@
         "events": [
             {
                 "function": "crawler.lambda_handler",
-                "expression": "rate(30 minutes)"
+                "expression": "cron(0/30 * * * ? *)"
             }
         ],
         "keep_warm": false,

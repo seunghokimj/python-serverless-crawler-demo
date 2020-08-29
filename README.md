@@ -32,9 +32,9 @@ AWS의 서비스와 결합하여 사용이 가능해졌습니다. 코드 편집�
 
 그러면 Cloud9 환경을 시작해봅시다.
 
-[Cloud 9 Console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1#)에 접속합니다.
+[Cloud 9 Console](https://ap-northeast-2.console.aws.amazon.com/cloud9/home?region=ap-northeast-2)에 접속합니다.
 
-아래와 같은 화면에서 [Create Environment](https://ap-southeast-1.console.aws.amazon.com/cloud9/home/create) 버튼을 누릅니다.
+아래와 같은 화면에서 [Create Environment](https://ap-northeast-2.console.aws.amazon.com/cloud9/home/create) 버튼을 누릅니다.
 
 ![c9-create](/images/c9-create.png)
 
@@ -103,6 +103,7 @@ DynamoDB를 설계할 시 주의해야할 점은 [FAQ](https://aws.amazon.com/ko
 
 이제 DynamoDB에 Todo table을 생성할 것입니다. 파티션 키와 정렬 키는 다음과 같이 설정합니다.
 
+- 테이블 이름: PortalNews 
 - 파티션키(Partition Key): portal
 - 정렬키(Sort Key): createdAt
 
@@ -214,8 +215,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 ```
 
 python version 설정을 완료하였습니다.
-
-다시 새로운 터미널을 열면, **(venv)** 라고 virtualenv 가 activate 되어있음을 확인할 수 있습니다.
 
 
 ## [Zappa - Serverless Python Web Services](https://www.zappa.io/)
@@ -365,11 +364,11 @@ zappa_settings.json 파일을 확인하면 기본적인 zappa 설정 내용을 �
 
 ```txt
 environment
-└── serverless-crawler  : Crawler
+└── serverless-crawler  : 작업 디렉터리
     ├── crawler.py  : Lambda에서 trigger하기 위한 handler가 포한됨 파일
     ├── lambda_test.py: lambda function test
     ├── zappa_settings.json : Zappa config file
-    └── requirements.txt : 개발을 위하 필요한 library 정보
+    └── requirements.txt : 개발을 위해 필요한 library 정보
 ```
 
 먼저 터미널을 열어 serverless-crawler 디렉터리를 생성하고 각 파일들을 편집합니다.
@@ -444,11 +443,6 @@ Does this look okay? (default 'y') [y/n]: y
 ### serverless-crawler/crawler.py
 
 ```python
-
-
-
-
-
 import requests
 import datetime
 from bs4 import BeautifulSoup
@@ -465,9 +459,6 @@ MAX_NEWS_LEN = 20
 
 
 class PortalNews(Model):
-    """
-    A DynamoDB Keyword
-    """
     class Meta:
         table_name = "PortalNews"
         region = 'ap-northeast-2'
@@ -516,7 +507,7 @@ print(lambda_handler(None, None))
 success
 ```
 
-[DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#tables:selected=PortalKeyword)에 들어가서 성공적으로 항목들이 생성되었는지 확인합니다.
+[DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2#tables:selected=PortalNews)에 들어가서 성공적으로 항목들이 생성되었는지 확인합니다.
 
 
 ## Cloud9에서 배포하기
@@ -577,26 +568,32 @@ Init Duration: 593.14 ms
 
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ zappa update dev
+Calling update for stage dev..
 Downloading and installing dependencies..
+ - yarl==1.5.1: Using locally cached manylinux wheel
+ - multidict==4.7.6: Using locally cached manylinux wheel
+ - aiohttp==3.6.2: Using locally cached manylinux wheel
 Packaging project as zip.
-Uploading python-serverless-crawler-dev-1598697589.zip (9.7MiB)..
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10.2M/10.2M [00:01<00:00, 9.65MB/s]
+Uploading python-serverless-crawler-dev-1598725230.zip (11.0MiB)..
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 11.5M/11.5M [00:00<00:00, 21.0MB/s]
 Updating Lambda function code..
 Updating Lambda function configuration..
 Scheduling..
 Unscheduled python-serverless-crawler-dev-crawler.lambda_handler.
-Scheduled python-serverless-crawler-dev-crawler.lambda_handler with expression rate(10 minutes)!
+Scheduled python-serverless-crawler-dev-crawler.lambda_handler with expression cron(0/30 * * * ? *)!
 Your updated Zappa deployment is live!
+
 ```
 
 성공적으로 update 되었습니다.
-지금부터 10분마다 주기적으로 DynamoDB에 검색어 랭킹이 쌓입니다.
+지금부터 30분마다 주기적으로 DynamoDB에 랭킹 뉴스 정보가 쌓입니다.
 
 ## 리소스 삭제하기
+- [ ] lambda 삭제
 
-서버리스 앱은 내리는 것이 어렵지 않습니다.
-간단한 Command 하나면 모든 스택이 내려갑니다.
-Cloud9에서 새로운 터미널을 열고 다음과 같이 입력합니다.
+    서버리스 앱은 내리는 것이 어렵지 않습니다.
+    간단한 Command 하나면 모든 스택이 내려갑니다.
+    Cloud9에서 새로운 터미널을 열고 다음과 같이 입력합니다.
 
 ```sh
 (venv) ec2-user:~/environment/serverless-crawler $ zappa undeploy dev
@@ -607,14 +604,21 @@ Unscheduled python-serverless-crawler-dev-crawler.lambda_handler.
 Deleting Lambda function..
 Done!
 ```
+- [ ] IAM 사용자 삭제
 
-[IAM Console](https://console.aws.amazon.com/iam/home#/users)로 들어가서 오늘 생성한 관리자 사용자(python-serverless)를 삭제합니다.
+    [IAM Console](https://console.aws.amazon.com/iam/home#/users)로 들어가서 오늘 생성한 관리자 사용자(python-serverless)를 삭제합니다.
 
-[S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2)로 들어가서 생성한 s3 버킷(USERNAME-serverless-demo)을 삭제합니다.
+- [ ] S3 버킷 삭제
 
-[DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
+    [S3 Console](https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-2)로 들어가서 생성한 s3 버킷(USERNAME-serverless-demo)을 삭제합니다.
 
-[Cloud9 Console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-northeast-2)로 들어가서 IDE를 삭제합니다. 리전은 서울입니다.
+- [ ] DynamoDB 테이블 삭제
+
+    [DynamoDB Console](https://ap-northeast-2.console.aws.amazon.com/dynamodb/home?region=ap-northeast-2)로 들어가서 Table을 삭제합니다. 리전은 서울입니다.
+
+- [ ] Cloud9 삭제
+
+    [Cloud9 Console](https://ap-northeast-2.console.aws.amazon.com/cloud9/home?region=ap-northeast-2)로 들어가서 IDE를 삭제합니다. 리전은 서울입니다.
 
 
 ## References

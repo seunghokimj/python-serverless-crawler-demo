@@ -45,8 +45,8 @@ def naver_news_crawler(section):
     created_at = datetime.datetime.utcnow().isoformat()[:19]
 
     try:
-        daum_url = f'{NAVER_RANKING_NEWS_URL}{section}'
-        naver_resp = requests.get(daum_url, headers=DEFAULT_HEADER)
+        naver_url = f'{NAVER_RANKING_NEWS_URL}{section}'
+        naver_resp = requests.get(naver_url, headers=DEFAULT_HEADER)
         naver_soup = BeautifulSoup(naver_resp.text, 'html.parser')
 
         for i, tag in enumerate(naver_soup.find_all('div', {'class': 'ranking_headline'})[:MAX_NEWS_LEN]):
