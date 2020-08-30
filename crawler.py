@@ -1,8 +1,7 @@
 import requests
 import datetime
 from bs4 import BeautifulSoup
-from pynamodb.models import Model
-from pynamodb.attributes import UnicodeAttribute, ListAttribute
+from models import PortalNews
 
 NAVER_SECTIONS = {
     '100': '정치',
@@ -27,17 +26,6 @@ DEFAULT_HEADER = {
 }
 
 MAX_NEWS_LEN = 20
-
-
-class PortalNews(Model):
-    class Meta:
-        table_name = "PortalNews"
-        region = 'ap-northeast-2'
-
-    portal = UnicodeAttribute(hash_key=True)
-    createdAt = UnicodeAttribute(range_key=True)
-    section = UnicodeAttribute()
-    news = ListAttribute()
 
 
 def naver_news_crawler(section):

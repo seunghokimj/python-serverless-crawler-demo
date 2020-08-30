@@ -367,6 +367,7 @@ environment
 └── serverless-crawler  : 작업 디렉터리
     ├── crawler.py  : Lambda에서 trigger하기 위한 handler가 포한됨 파일
     ├── lambda_test.py: lambda function test
+    ├── models.py: DynamoDB 모델
     ├── zappa_settings.json : Zappa config file
     └── requirements.txt : 개발을 위해 필요한 library 정보
 ```
@@ -440,23 +441,10 @@ Does this look okay? (default 'y') [y/n]: y
 }
 ```
 
-### serverless-crawler/crawler.py
-
+### serverless-crawler/models.py
 ```python
-import requests
-import datetime
-from bs4 import BeautifulSoup
 from pynamodb.models import Model
 from pynamodb.attributes import UnicodeAttribute, ListAttribute
-
-
-DEFAULT_TIMEOUT = 10
-DEFAULT_HEADER = {
-    'User-Agent': 'Mozilla/5.0'
-}
-
-MAX_NEWS_LEN = 20
-
 
 class PortalNews(Model):
     class Meta:
@@ -467,6 +455,23 @@ class PortalNews(Model):
     createdAt = UnicodeAttribute(range_key=True)
     section = UnicodeAttribute()
     news = ListAttribute()
+```
+
+### serverless-crawler/crawler.py
+
+```python
+import requests
+import datetime
+from bs4 import BeautifulSoup
+
+
+DEFAULT_TIMEOUT = 10
+DEFAULT_HEADER = {
+    'User-Agent': 'Mozilla/5.0'
+}
+
+MAX_NEWS_LEN = 20
+
 
 def naver_news_crawler(section):
     title_list = list()
