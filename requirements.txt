@@ -1,4 +1,4 @@
-aiohttp==3.6.2
+aiohttp==3.7.4
 beautifulsoup4==4.9.1
 pynamodb==4.3.3
 python-dateutil==2.6.1
